@@ -223,3 +223,25 @@ input:checked + .slider:before {
 .sidebar-input-wrapper--no-padding > p {
   margin-bottom: 0px;
 }
+
+.leaflet-control-messagebox {
+  background-color: #fff;
+  padding: 5px;
+  border: 2px solid #231f20;
+}
+
+.isochrone-error {
+  display: none;
+  color: red;
+}
+.isochrone-loading {
+  display: none;
+}
+
+.is-shown {
+  display: block !important;
+}
+
+.flex-align-center {
+  align-items: baseline;
+}

@@ -1,17 +1,12 @@
-/**
- * Step 1: Work on the same thing! (https://github.com/NHSDigital/map-viewer)
- * Step 2: Add Bubble Map
- * Step 3: Modes of transport
- * Step 4: Isochrone Center Location
- * Step 5: Make a Jira for Choropleth
- * Step 6: Discuss "Output Bundle"
- * Step 7: Put this on the "proper" checklist
- */
-
 let map = null;
 
+let choroplethLoading = false;
 let ccgBoundaryLayer = null;
 let msoaBoundaryGeoJSON = null;
+let hospitalData = null;
+let snsConstant = 2000;
+let choroplethCenter = null;
+let modeOfTransportOption = "driving-car";
 let msoaBoundaryLayer = null;
 let isochroneTime = 60;
 let isochroneInterval = 30;
@@ -36,6 +31,30 @@ const MSOABoundaryLayerOptions = {
   }
 };
 
+function openContextMenu(e) {
+  console.log(this);
+  const popup = L.popup()
+    .setContent(
+      '<a href="#" class="change-choropleth-location">Set Choropleth Location</a>'
+    )
+    .setLatLng(e.latlng);
+  popup.openOn(this);
+  Array.from(
+    document.getElementsByClassName("change-choropleth-location")
+  ).forEach(el => {
+    console.log(el);
+    el.addEventListener("click", clickEvent => {
+      clickEvent.preventDefault();
+      const { lat, lng } = e.latlng;
+      document.getElementById("isochrone-latitude-label").innerHTML = lat;
+      document.getElementById("isochrone-longitude-label").innerHTML = lng;
+      choroplethCenter = [lng, lat];
+      map.closePopup(popup);
+      redrawIsochrones();
+    });
+  });
+}
+
 const setupLeaflet = async () => {
   map = L.map("map", { minZoom: 4, maxZoom: 18 });
 
@@ -51,12 +70,16 @@ const setupLeaflet = async () => {
     }
   ).addTo(map);
 
+  map.on("contextmenu", openContextMenu);
+
   // Load CCG Boundary Data and MSOA Data
-  await Promise.all([loadCCGBoundaryData(), loadMSOABoundaryData()]);
-  await redrawIsochrones();
-  map.on("contextmenu", e => {
-    console.log(e.latlng);
-  });
+  await Promise.all([
+    loadCCGBoundaryData(),
+    loadMSOABoundaryData(),
+    loadHospitalData()
+  ]);
+  drawBubblesFromHospitalData();
+
   // Ready
   console.log("Map Ready");
 };
@@ -103,11 +126,26 @@ const loadMSOABoundaryData = async () => {
   );
 };
 
+const loadHospitalData = async () => {
+  const fetchedData = await fetch("/assets/sensitive/HospitalData.json");
+  hospitalData = await fetchedData.json();
+};
+
 const toggleLayer = async (layer, toggle) => {
   if (toggle) {
     layer.addTo(map);
   } else {
     map.removeLayer(layer);
+  }
+};
+
+const toggleLoadingText = toggle => {
+  const el = document.getElementById("isochrone-loading");
+
+  if (toggle) {
+    el.classList.add("is-shown");
+  } else {
+    el.classList.remove("is-shown");
   }
 };
 
@@ -131,9 +169,19 @@ const toggleMSOABoundaryData = async toggle => {
 };
 
 const redrawIsochrones = async () => {
+  choroplethLoading = true;
+  toggleLoadingText();
+  const errorEl = document.getElementById("isochrone-error");
+  if (choroplethCenter === null) {
+    errorEl.innerHTML =
+      "Choropleth center must be set. You can set the center by right clicking on the map.";
+    errorEl.classList.add("is-shown");
+    return;
+  } else {
+    errorEl.innerHTML = "";
+    errorEl.classList.remove("is-shown");
+  }
   currentIsochrone.forEach(layer => map.removeLayer(layer));
-  currentIsochrone = null;
-  const middleCoordinates = [-1.54841, 53.796143];
   const headers = new Headers();
   headers.set(
     "Accept",
@@ -153,33 +201,41 @@ const redrawIsochrones = async () => {
     .filter(x => x > 0);
 
   const response = await fetch(
-    "https://api.openrouteservice.org/v2/isochrones/driving-car",
+    `https://api.openrouteservice.org/v2/isochrones/${modeOfTransportOption}`,
     {
       method: "POST",
-
       headers: headers,
       body: JSON.stringify({
-        locations: [middleCoordinates],
+        locations: [choroplethCenter],
         range: range
       })
     }
   );
   const geoJson = await response.json();
-  const colours = ["red", "orange", "yellow", "green"];
 
-  currentIsochrone = geoJson.features
-    .map((feature, index) =>
-      L.geoJSON(feature, {
-        ...CCGBoundaryLayerOptions,
-        permanent: true,
-        style: {
-          ...CCGBoundaryLayerOptions.style,
-          fillOpacity: 0.15,
-          color: colours[index]
-        }
-      })
-    )
-    .reverse();
+  const colours = ISOCHRONE_COLOURS[sectionCount];
+
+  currentIsochrone.forEach(layer => map.removeLayer(layer));
+
+  currentIsochrone = geoJson.features.reverse().map((feature, index) => {
+    let finalFeature = null;
+    if (index === geoJson.features.length - 1) {
+      finalFeature = feature;
+    } else {
+      finalFeature = turf.difference(feature, geoJson.features[index + 1]);
+    }
+    return L.geoJSON(finalFeature, {
+      ...CCGBoundaryLayerOptions,
+      permanent: true,
+      style: {
+        ...CCGBoundaryLayerOptions.style,
+        fillOpacity: 0.15,
+        color: colours[index]
+      }
+    });
+  });
+  choroplethLoading = false;
+  toggleLoadingText();
   currentIsochrone.forEach(layer => layer.addTo(map));
 };
 
@@ -224,6 +280,7 @@ const recalculateRangeAndLabels = ({ currentTarget }) => {
       currentTarget.value === "1" ? "minute" : "minutes"
     }`;
     isochroneIntervalRangeEl.max = currentTarget.value;
+    isochroneIntervalRangeEl.min = Math.ceil(currentTarget.value / 10);
     isochroneIntervalRangeLabelEl.innerHTML = `${
       isochroneIntervalRangeEl.value
     } ${isochroneIntervalRangeEl.value === "1" ? "minute" : "minutes"}`;
@@ -234,12 +291,56 @@ const recalculateRangeAndLabels = ({ currentTarget }) => {
   }
   isochroneTime = Number(isochroneTimeRangeEl.value);
   isochroneInterval = Number(isochroneIntervalRangeEl.value);
-  debounceRedrawIsochrones();
+};
+
+const drawBubblesFromHospitalData = () => {
+  const data = hospitalData.sort((a, b) => (a[3] < b[3] ? -1 : 1));
+
+  const patientCount = data.reduce((count, nextVal) => count + nextVal[3], 0);
+  let showSNSBox = false;
+
+  data.forEach(hospital => {
+    const [lat, long, _, currentDeaths, hospitalName, postcode] = hospital;
+    if (currentDeaths > snsConstant) {
+      L.circle([lat, long], (currentDeaths / patientCount) * 1000000, {
+        color: "blue",
+        fillColor: "#00bfff",
+        weight: 1,
+        fillOpacity: 0.05,
+        opacity: 0.6
+      })
+        .bindPopup(
+          currentDeaths.toString(10) +
+            " people fulfilling the inclusion criteria at " +
+            hospitalName.toString(10) +
+            ", " +
+            postcode.toString(10)
+        )
+        .addTo(map);
+    } else {
+      showSNSBox = true;
+    }
+  });
+
+  if (showSNSBox) {
+    L.control
+      .messagebox("options")
+      .addTo(map)
+      .show("Some data missing due to small number suppression");
+  }
 };
 
 isochroneTimeRangeEl.addEventListener("input", recalculateRangeAndLabels);
 isochroneIntervalRangeEl.addEventListener("input", recalculateRangeAndLabels);
 
+isochroneTimeRangeEl.addEventListener("change", debounceRedrawIsochrones);
+isochroneIntervalRangeEl.addEventListener("change", debounceRedrawIsochrones);
+
 const isochroneFromHere = e => {};
 
-document.getElementById("map").addEventListener("contextmenu", e => {});
+document
+  .getElementById("mode-of-transport-dropdown")
+  .addEventListener("change", e => {
+    modeOfTransportOption = e.currentTarget.value;
+    debounceRedrawIsochrones();
+  });

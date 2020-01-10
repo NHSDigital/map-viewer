@@ -34,8 +34,15 @@
           <span class="slider"></span>
         </label>
       </div>
+
       <br />
-      <h3 class="sidebar-header">Isochrones</h3>
+      <div class="sidebar-input-wrapper flex-align-center">
+        <h3 class="sidebar-header">Isochrones</h3>
+        <h5 class="sidebar-header isochrone-loading" id="isochrone-loading">
+          Loading...
+        </h5>
+      </div>
+      <p class="isochrone-error" id="isochrone-error"></p>
       <div class="sidebar-input-wrapper sidebar-input-wrapper--slider">
         <p class="sidebar-input-label">Time</p>
         <input
@@ -52,11 +59,29 @@
         <input
           class="range-slider"
           type="range"
-          min="1"
+          min="6"
           max="60"
           value="30"
           id="isochrone-interval-range"
         />
+      </div>
+      <div class="sidebar-input-wrapper">
+        <div>
+          <p class="sidebar-input-label">Mode of Transport</p>
+        </div>
+        <select class="dropdown" id="mode-of-transport-dropdown">
+          <option value="driving-car">Driving (Car)</option>
+          <option value="cycling-regular">Cycling</option>
+          <option value="foot-walking">Walking</option>
+        </select>
+      </div>
+      <div class="sidebar-input-wrapper sidebar-input-wrapper--no-padding">
+        <p>Current Latitude:</p>
+        <p id="isochrone-latitude-label">Unset</p>
+      </div>
+      <div class="sidebar-input-wrapper sidebar-input-wrapper--no-padding">
+        <p>Current Longitude:</p>
+        <p id="isochrone-longitude-label">Unset</p>
       </div>
       <div class="sidebar-input-wrapper sidebar-input-wrapper--no-padding">
         <p>Current Time:</p>
@@ -97,7 +122,14 @@
       integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
       crossorigin=""
     ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@turf/turf@5.1.6/turf.min.js"
+      integrity="sha256-Nhtik+K3xORhs5S9o0qlol4eRNB9O5OyTOJqbLucPk8="
+      crossorigin="anonymous"
+    ></script>
     <!-- Code -->
+    <script src="js/leaflet-plugins.js"></script>
+    <script src="js/constants.js"></script>
     <script src="js/sidebar.js"></script>
     <script src="js/map.js"></script>
   </body>
