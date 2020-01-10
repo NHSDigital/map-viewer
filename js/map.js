@@ -1,3 +1,11 @@
+/**
+ * Step 1: Work on the same thing! (https://github.com/NHSDigital/map-viewer)
+ * Step 2: Add Bubble Map
+ * Step 3: Modes of transport
+ * Step 4: Isochrone Center Location
+ * Step 5: Make a Jira for Choropleth
+ */
+
 let map = null;
 
 let ccgBoundaryLayer = null;
@@ -44,6 +52,9 @@ const setupLeaflet = async () => {
   // Load CCG Boundary Data and MSOA Data
   await Promise.all([loadCCGBoundaryData(), loadMSOABoundaryData()]);
   await redrawIsochrones();
+  map.on("contextmenu", e => {
+    console.log(e.latlng);
+  });
   // Ready
   console.log("Map Ready");
 };
@@ -119,6 +130,7 @@ const toggleMSOABoundaryData = async toggle => {
 
 const redrawIsochrones = async () => {
   currentIsochrone.forEach(layer => map.removeLayer(layer));
+  currentIsochrone = null;
   const middleCoordinates = [-1.54841, 53.796143];
   const headers = new Headers();
   headers.set(
@@ -227,3 +239,5 @@ isochroneTimeRangeEl.addEventListener("input", recalculateRangeAndLabels);
 isochroneIntervalRangeEl.addEventListener("input", recalculateRangeAndLabels);
 
 const isochroneFromHere = e => {};
+
+document.getElementById("map").addEventListener("contextmenu", e => {});
