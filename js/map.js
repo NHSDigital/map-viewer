@@ -48,8 +48,12 @@ function openContextMenu(e) {
     el.addEventListener("click", clickEvent => {
       clickEvent.preventDefault();
       const { lat, lng } = e.latlng;
-      document.getElementById("isochrone-latitude-label").innerHTML = lat;
-      document.getElementById("isochrone-longitude-label").innerHTML = lng;
+      document.getElementById(
+        "isochrone-latitude-label"
+      ).innerHTML = lat.toFixed(6);
+      document.getElementById(
+        "isochrone-longitude-label"
+      ).innerHTML = lng.toFixed(6);
       choroplethCenter = [lng, lat];
       map.closePopup(popup);
       redrawIsochrones();
