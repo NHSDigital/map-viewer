@@ -4,6 +4,8 @@
  * Step 3: Modes of transport
  * Step 4: Isochrone Center Location
  * Step 5: Make a Jira for Choropleth
+ * Step 6: Discuss "Output Bundle"
+ * Step 7: Put this on the "proper" checklist
  */
 
 let map = null;
