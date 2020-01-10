@@ -141,7 +141,12 @@ const toggleLayer = async (layer, toggle) => {
 
 const toggleLoadingText = toggle => {
   const el = document.getElementById("isochrone-loading");
-
+  const timeSlider = document.getElementById("isochrone-time-range");
+  const intervalSlider = document.getElementById("isochrone-interval-range");
+  const modeOfTransport = document.getElementById("mode-of-transport-dropdown");
+  timeSlider.disabled = toggle;
+  intervalSlider.disabled = toggle;
+  modeOfTransport.disabled = toggle;
   if (toggle) {
     el.classList.add("is-shown");
   } else {
@@ -170,7 +175,7 @@ const toggleMSOABoundaryData = async toggle => {
 
 const redrawIsochrones = async () => {
   choroplethLoading = true;
-  toggleLoadingText();
+
   const errorEl = document.getElementById("isochrone-error");
   if (choroplethCenter === null) {
     errorEl.innerHTML =
@@ -181,6 +186,7 @@ const redrawIsochrones = async () => {
     errorEl.innerHTML = "";
     errorEl.classList.remove("is-shown");
   }
+  toggleLoadingText(true);
   currentIsochrone.forEach(layer => map.removeLayer(layer));
   const headers = new Headers();
   headers.set(
@@ -235,7 +241,7 @@ const redrawIsochrones = async () => {
     });
   });
   choroplethLoading = false;
-  toggleLoadingText();
+  toggleLoadingText(false);
   currentIsochrone.forEach(layer => layer.addTo(map));
 };
 
