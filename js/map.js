@@ -32,17 +32,17 @@ const MSOABoundaryLayerOptions = {
 };
 
 function openContextMenu(e) {
-  console.log(this);
-  const popup = L.popup()
+  const popup = L.popup({
+    className: "context-menu"
+  })
     .setContent(
-      '<a href="#" class="change-choropleth-location">Set Choropleth Location</a>'
+      '<div class="context-menu-option"><a href="#" class="change-isochrone-location">Set Isochrone Location</a></div>'
     )
     .setLatLng(e.latlng);
   popup.openOn(this);
   Array.from(
-    document.getElementsByClassName("change-choropleth-location")
+    document.getElementsByClassName("change-isochrone-location")
   ).forEach(el => {
-    console.log(el);
     el.addEventListener("click", clickEvent => {
       clickEvent.preventDefault();
       const { lat, lng } = e.latlng;
@@ -179,7 +179,7 @@ const redrawIsochrones = async () => {
   const errorEl = document.getElementById("isochrone-error");
   if (choroplethCenter === null) {
     errorEl.innerHTML =
-      "Choropleth center must be set. You can set the center by right clicking on the map.";
+      "Isochrone center must be set. You can set the center by right clicking on the map.";
     errorEl.classList.add("is-shown");
     return;
   } else {
