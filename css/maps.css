@@ -293,3 +293,15 @@ input:checked + .slider:before {
   text-decoration: none;
   color: #231f20 !important;
 }
+
+.sns-popup {
+  transition: all 0.2s ease-in-out;
+  transform: scale(1);
+}
+
+.is-hidden {
+  border: 2px solid black;
+  transform: scale(0.85);
+  transition: all 0.2s ease-in-out;
+  opacity: 0 !important;
+}

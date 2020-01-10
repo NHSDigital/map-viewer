@@ -8,7 +8,10 @@ L.Control.Messagebox = L.Control.extend({
   },
 
   onAdd: function(map) {
-    this._container = L.DomUtil.create("div", "leaflet-control-messagebox");
+    this._container = L.DomUtil.create(
+      "div",
+      "leaflet-control-messagebox sns-popup"
+    );
     //L.DomEvent.disableClickPropagation(this._container);
     return this._container;
   },

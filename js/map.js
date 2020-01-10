@@ -12,6 +12,8 @@ let isochroneTime = 60;
 let isochroneInterval = 30;
 let isochroneDebounceInterval = null;
 let currentIsochrone = [];
+let bubbleLayers = [];
+let snsMessageBox = null;
 
 const CCGBoundaryLayerOptions = {
   style: {
@@ -78,8 +80,14 @@ const setupLeaflet = async () => {
     loadMSOABoundaryData(),
     loadHospitalData()
   ]);
-  drawBubblesFromHospitalData();
 
+  snsMessageBox = L.control
+    .messagebox({
+      className: "sns-message-box"
+    })
+    .addTo(map)
+    .show("Some data missing due to small number suppression");
+  toggleSNSMessageBox(false);
   // Ready
   console.log("Map Ready");
 };
@@ -269,6 +277,12 @@ document
     toggleMSOABoundaryData(currentTarget.checked)
   );
 
+document
+  .getElementById("bubble-toggle")
+  .addEventListener("change", ({ currentTarget }) =>
+    toggleBubbleData(currentTarget.checked)
+  );
+
 const isochroneTimeRangeEl = document.getElementById("isochrone-time-range");
 const isochroneIntervalRangeEl = document.getElementById(
   "isochrone-interval-range"
@@ -305,34 +319,61 @@ const drawBubblesFromHospitalData = () => {
   const patientCount = data.reduce((count, nextVal) => count + nextVal[3], 0);
   let showSNSBox = false;
 
-  data.forEach(hospital => {
-    const [lat, long, _, currentDeaths, hospitalName, postcode] = hospital;
-    if (currentDeaths > snsConstant) {
-      L.circle([lat, long], (currentDeaths / patientCount) * 1000000, {
-        color: "blue",
-        fillColor: "#00bfff",
-        weight: 1,
-        fillOpacity: 0.05,
-        opacity: 0.6
-      })
-        .bindPopup(
-          currentDeaths.toString(10) +
-            " people fulfilling the inclusion criteria at " +
-            hospitalName.toString(10) +
-            ", " +
-            postcode.toString(10)
-        )
-        .addTo(map);
-    } else {
-      showSNSBox = true;
-    }
-  });
+  bubbleLayers = data
+    .map(hospital => {
+      const [lat, long, _, currentDeaths, hospitalName, postcode] = hospital;
+      if (currentDeaths > snsConstant) {
+        const circle = L.circle(
+          [lat, long],
+          (currentDeaths / patientCount) * 1000000,
+          {
+            color: "blue",
+            fillColor: "#00bfff",
+            weight: 1,
+            fillOpacity: 0.05,
+            opacity: 0.6
+          }
+        );
+        circle
+          .bindPopup(
+            currentDeaths.toString(10) +
+              " people fulfilling the inclusion criteria at " +
+              hospitalName.toString(10) +
+              ", " +
+              postcode.toString(10)
+          )
+          .addTo(map);
+        return circle;
+      } else {
+        showSNSBox = true;
+        return null;
+      }
+    })
+    .filter(x => x !== null);
 
-  if (showSNSBox) {
-    L.control
-      .messagebox("options")
-      .addTo(map)
-      .show("Some data missing due to small number suppression");
+  if (showSNSBox && snsMessageBox === null) {
+  }
+};
+
+const toggleSNSMessageBox = toggle => {
+  if (toggle) {
+    Array.from(document.getElementsByClassName("sns-popup")).forEach(popup =>
+      popup.classList.remove("is-hidden")
+    );
+  } else {
+    Array.from(document.getElementsByClassName("sns-popup")).forEach(popup =>
+      popup.classList.add("is-hidden")
+    );
+  }
+};
+
+const toggleBubbleData = toggle => {
+  if (toggle) {
+    drawBubblesFromHospitalData();
+    toggleSNSMessageBox(true);
+  } else {
+    bubbleLayers.forEach(bubble => map.removeLayer(bubble));
+    toggleSNSMessageBox(false);
   }
 };
 
