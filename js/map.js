@@ -1,11 +1,11 @@
 let map = null;
 
-let choroplethLoading = false;
+let isochroneLoading = false;
 let ccgBoundaryLayer = null;
 let msoaBoundaryGeoJSON = null;
 let hospitalData = null;
 let snsConstant = 2000;
-let choroplethCenter = null;
+let isochroneCenter = null;
 let modeOfTransportOption = "driving-car";
 let msoaBoundaryLayer = null;
 let isochroneTime = 60;
@@ -54,7 +54,7 @@ function openContextMenu(e) {
       document.getElementById(
         "isochrone-longitude-label"
       ).innerHTML = lng.toFixed(6);
-      choroplethCenter = [lng, lat];
+      isochroneCenter = [lng, lat];
       map.closePopup(popup);
       redrawIsochrones();
     });
@@ -186,10 +186,10 @@ const loadCCGBoundaryData = async () => {
   };
 
   const redrawIsochrones = async () => {
-    choroplethLoading = true;
+    isochroneLoading = true;
 
     const errorEl = document.getElementById("isochrone-error");
-    if (choroplethCenter === null) {
+    if (isochroneCenter === null) {
       errorEl.innerHTML =
       "Isochrone center must be set. You can set the center by right clicking on the map.";
       errorEl.classList.add("is-shown");
@@ -224,7 +224,7 @@ const loadCCGBoundaryData = async () => {
         method: "POST",
         headers: headers,
         body: JSON.stringify({
-          locations: [choroplethCenter],
+          locations: [isochroneCenter],
           range: range
         })
       }
@@ -255,7 +255,7 @@ const loadCCGBoundaryData = async () => {
         }
       });
     });
-    choroplethLoading = false;
+    isochroneLoading = false;
     toggleLoadingText(false);
     currentIsochrone.forEach(layer => layer.addTo(map));
   };
