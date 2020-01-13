@@ -4,6 +4,7 @@ let isochroneLoading = false;
 let ccgBoundaryLayer = null;
 let msoaBoundaryGeoJSON = null;
 let hospitalData = null;
+let patientData = null;
 let snsConstant = 2000;
 let isochroneCenter = null;
 let modeOfTransportOption = "driving-car";
@@ -82,7 +83,8 @@ const setupLeaflet = async () => {
   await Promise.all([
     loadCCGBoundaryData(),
     loadMSOABoundaryData(),
-    loadHospitalData()
+    loadHospitalData(),
+    loadPatientData()
   ]);
 
   snsMessageBox = L.control
@@ -141,6 +143,11 @@ const loadCCGBoundaryData = async () => {
   const loadHospitalData = async () => {
     const fetchedData = await fetch("/assets/sensitive/HospitalData.json");
     hospitalData = await fetchedData.json();
+  };
+
+  const loadPatientData = async () => {
+    const fetchedData = await fetch("/assets/TestPatientData.json");
+    patientData = await fetchedData.json();
   };
 
   const toggleLayer = async (layer, toggle) => {
