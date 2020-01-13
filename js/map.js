@@ -37,10 +37,10 @@ function openContextMenu(e) {
   const popup = L.popup({
     className: "context-menu"
   })
-    .setContent(
-      '<div class="context-menu-option"><a href="#" class="change-isochrone-location">Set Isochrone Location</a></div>'
-    )
-    .setLatLng(e.latlng);
+  .setContent(
+    '<div class="context-menu-option"><a href="#" class="change-isochrone-location">Set Isochrone Location</a></div>'
+  )
+  .setLatLng(e.latlng);
   popup.openOn(this);
   Array.from(
     document.getElementsByClassName("change-isochrone-location")
@@ -72,7 +72,7 @@ const setupLeaflet = async () => {
     "	https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png",
     {
       attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }
   ).addTo(map);
 
@@ -86,11 +86,11 @@ const setupLeaflet = async () => {
   ]);
 
   snsMessageBox = L.control
-    .messagebox({
-      className: "sns-message-box"
-    })
-    .addTo(map)
-    .show("Some data missing due to small number suppression");
+  .messagebox({
+    className: "sns-message-box"
+  })
+  .addTo(map)
+  .show("Some data missing due to small number suppression");
   toggleSNSMessageBox(false);
   // Ready
   console.log("Map Ready");
@@ -114,9 +114,9 @@ const bindEventHandlerForMSOALoad = event => {
 };
 
 /**
- * Builds the Leaflet GeoJSON layer using the Generalised CCG Boundary Data
- * from ONS.
- */
+* Builds the Leaflet GeoJSON layer using the Generalised CCG Boundary Data
+* from ONS.
+*/
 const loadCCGBoundaryData = async () => {
   const fetchedData = await fetch("/assets/CCGBoundaries.geojson");
   const { features } = await fetchedData.json();
@@ -125,167 +125,170 @@ const loadCCGBoundaryData = async () => {
     layer.bindPopup(`
       <p>${layer.feature.properties.ccg19nm}</p>
       <a href="#" class="load-msoa-layer-via-ccg">Load MSOA Data for this CCG</a>`);
-  });
-  ccgBoundaryLayer.on("click", bindEventHandlerForMSOALoad);
-};
+    });
+    ccgBoundaryLayer.on("click", bindEventHandlerForMSOALoad);
+  };
 
-const loadMSOABoundaryData = async () => {
-  const fetchedData = await fetch("/assets/MSOAData.geojson");
-  msoaBoundaryGeoJSON = await fetchedData.json();
-  msoaBoundaryLayer = L.geoJSON(
-    msoaBoundaryGeoJSON.features,
-    MSOABoundaryLayerOptions
-  );
-};
+  const loadMSOABoundaryData = async () => {
+    const fetchedData = await fetch("/assets/MSOAData.geojson");
+    msoaBoundaryGeoJSON = await fetchedData.json();
+    msoaBoundaryLayer = L.geoJSON(
+      msoaBoundaryGeoJSON.features,
+      MSOABoundaryLayerOptions
+    );
+  };
 
-const loadHospitalData = async () => {
-  const fetchedData = await fetch("/assets/sensitive/HospitalData.json");
-  hospitalData = await fetchedData.json();
-};
+  const loadHospitalData = async () => {
+    const fetchedData = await fetch("/assets/sensitive/HospitalData.json");
+    hospitalData = await fetchedData.json();
+  };
 
-const toggleLayer = async (layer, toggle) => {
-  if (toggle) {
-    layer.addTo(map);
-  } else {
-    map.removeLayer(layer);
-  }
-};
+  const toggleLayer = async (layer, toggle) => {
+    if (toggle) {
+      layer.addTo(map);
+    } else {
+      map.removeLayer(layer);
+    }
+  };
 
-const toggleLoadingText = toggle => {
-  const el = document.getElementById("isochrone-loading");
-  const timeSlider = document.getElementById("isochrone-time-range");
-  const intervalSlider = document.getElementById("isochrone-interval-range");
-  const modeOfTransport = document.getElementById("mode-of-transport-dropdown");
-  timeSlider.disabled = toggle;
-  intervalSlider.disabled = toggle;
-  modeOfTransport.disabled = toggle;
-  if (toggle) {
-    el.classList.add("is-shown");
-  } else {
-    el.classList.remove("is-shown");
-  }
-};
+  const toggleLoadingText = toggle => {
+    const el = document.getElementById("isochrone-loading");
+    const timeSlider = document.getElementById("isochrone-time-range");
+    const intervalSlider = document.getElementById("isochrone-interval-range");
+    const modeOfTransport = document.getElementById("mode-of-transport-dropdown");
+    timeSlider.disabled = toggle;
+    intervalSlider.disabled = toggle;
+    modeOfTransport.disabled = toggle;
+    if (toggle) {
+      el.classList.add("is-shown");
+    } else {
+      el.classList.remove("is-shown");
+    }
+  };
 
-/**
- * Toggles the CCG Boundary data being displayed
- *
- * @param {Boolean} toggle
- */
-const toggleCCGBoundaryData = async toggle => {
-  if (ccgBoundaryLayer === null && toggle) {
-    await loadCCGBoundaryData();
-  }
-  toggleLayer(ccgBoundaryLayer, toggle);
-};
+  /**
+  * Toggles the CCG Boundary data being displayed
+  *
+  * @param {Boolean} toggle
+  */
+  const toggleCCGBoundaryData = async toggle => {
+    if (ccgBoundaryLayer === null && toggle) {
+      await loadCCGBoundaryData();
+    }
+    toggleLayer(ccgBoundaryLayer, toggle);
+  };
 
-const toggleMSOABoundaryData = async toggle => {
-  if (msoaBoundaryLayer === null && toggle) {
-    await loadCCGBoundaryData();
-  }
-  toggleLayer(msoaBoundaryLayer, toggle);
-};
+  const toggleMSOABoundaryData = async toggle => {
+    if (msoaBoundaryLayer === null && toggle) {
+      await loadCCGBoundaryData();
+    }
+    toggleLayer(msoaBoundaryLayer, toggle);
+  };
 
-const redrawIsochrones = async () => {
-  choroplethLoading = true;
+  const redrawIsochrones = async () => {
+    choroplethLoading = true;
 
-  const errorEl = document.getElementById("isochrone-error");
-  if (choroplethCenter === null) {
-    errorEl.innerHTML =
+    const errorEl = document.getElementById("isochrone-error");
+    if (choroplethCenter === null) {
+      errorEl.innerHTML =
       "Isochrone center must be set. You can set the center by right clicking on the map.";
-    errorEl.classList.add("is-shown");
-    return;
-  } else {
-    errorEl.innerHTML = "";
-    errorEl.classList.remove("is-shown");
-  }
-  toggleLoadingText(true);
-  currentIsochrone.forEach(layer => map.removeLayer(layer));
-  const headers = new Headers();
-  headers.set(
-    "Accept",
-    "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8"
-  );
-  headers.set("Content-Type", "application/json");
-  headers.set(
-    "Authorization",
-    env.ORS_API_KEY
-  );
+      errorEl.classList.add("is-shown");
+      return;
+    } else {
+      errorEl.innerHTML = "";
+      errorEl.classList.remove("is-shown");
+    }
+    toggleLoadingText(true);
+    currentIsochrone.forEach(layer => map.removeLayer(layer));
+    const headers = new Headers();
+    headers.set(
+      "Accept",
+      "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8"
+    );
+    headers.set("Content-Type", "application/json");
+    headers.set(
+      "Authorization",
+      env.ORS_API_KEY
+    );
 
-  const sectionCount = Math.ceil(isochroneTime / isochroneInterval);
-  const range = Array.from(new Array(sectionCount + 1).keys())
+    const sectionCount = Math.ceil(isochroneTime / isochroneInterval);
+    const range = Array.from(new Array(sectionCount + 1).keys())
     .map(index => {
       return isochroneTime * 60 - 60 * index * (isochroneTime / sectionCount);
     })
     .filter(x => x > 0);
 
-  const response = await fetch(
-    `https://api.openrouteservice.org/v2/isochrones/${modeOfTransportOption}`,
-    {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify({
-        locations: [choroplethCenter],
-        range: range
-      })
-    }
-  );
-  const geoJson = await response.json();
-
-  const colours = ISOCHRONE_COLOURS[sectionCount];
-
-  currentIsochrone.forEach(layer => map.removeLayer(layer));
-
-  currentIsochrone = geoJson.features.reverse().map((feature, index) => {
-    let finalFeature = null;
-    if (index === geoJson.features.length - 1) {
-      finalFeature = feature;
-    } else {
-      finalFeature = turf.difference(feature, geoJson.features[index + 1]);
-    }
-    return L.geoJSON(finalFeature, {
-      ...CCGBoundaryLayerOptions,
-      permanent: true,
-      style: {
-        ...CCGBoundaryLayerOptions.style,
-        fillOpacity: 0.15,
-        color: colours[index]
+    const response = await fetch(
+      `https://api.openrouteservice.org/v2/isochrones/${modeOfTransportOption}`,
+      {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({
+          locations: [choroplethCenter],
+          range: range
+        })
       }
+    );
+    const geoJson = await response.json();
+
+    const colours = ISOCHRONE_COLOURS[sectionCount];
+
+    currentIsochrone.forEach(layer => map.removeLayer(layer));
+
+    currentIsochrone = geoJson.features.reverse().map((feature, index) => {
+      let finalFeature = null;
+      if (index === geoJson.features.length - 1) {
+        finalFeature = feature;
+      } else {
+        finalFeature = turf.difference(feature, geoJson.features[index + 1]);
+      }
+      return L.geoJSON(finalFeature, {
+        onEachFeature:function(feature,layer){
+          layer.bindPopup(feature.properties.value/60 + " minutes");
+        },
+        ...CCGBoundaryLayerOptions,
+        permanent: true,
+        style: {
+          ...CCGBoundaryLayerOptions.style,
+          fillOpacity: 0.15,
+          color: colours[index]
+        }
+      });
     });
-  });
-  choroplethLoading = false;
-  toggleLoadingText(false);
-  currentIsochrone.forEach(layer => layer.addTo(map));
-};
+    choroplethLoading = false;
+    toggleLoadingText(false);
+    currentIsochrone.forEach(layer => layer.addTo(map));
+  };
 
-const debounceRedrawIsochrones = () => {
-  if (isochroneDebounceInterval !== null) {
-    clearTimeout(isochroneDebounceInterval);
-  }
-  isochroneDebounceInterval = setTimeout(() => {
-    redrawIsochrones();
-    isochroneDebounceInterval = null;
-  }, 250);
-};
+  const debounceRedrawIsochrones = () => {
+    if (isochroneDebounceInterval !== null) {
+      clearTimeout(isochroneDebounceInterval);
+    }
+    isochroneDebounceInterval = setTimeout(() => {
+      redrawIsochrones();
+      isochroneDebounceInterval = null;
+    }, 250);
+  };
 
-window.addEventListener("load", setupLeaflet);
+  window.addEventListener("load", setupLeaflet);
 
-document
+  document
   .getElementById("ccg-boundary-toggle")
   .addEventListener("change", ({ currentTarget }) =>
-    toggleCCGBoundaryData(currentTarget.checked)
-  );
+  toggleCCGBoundaryData(currentTarget.checked)
+);
 
 document
-  .getElementById("msoa-boundary-toggle")
-  .addEventListener("change", ({ currentTarget }) =>
-    toggleMSOABoundaryData(currentTarget.checked)
-  );
+.getElementById("msoa-boundary-toggle")
+.addEventListener("change", ({ currentTarget }) =>
+toggleMSOABoundaryData(currentTarget.checked)
+);
 
 document
-  .getElementById("bubble-toggle")
-  .addEventListener("change", ({ currentTarget }) =>
-    toggleBubbleData(currentTarget.checked)
-  );
+.getElementById("bubble-toggle")
+.addEventListener("change", ({ currentTarget }) =>
+toggleBubbleData(currentTarget.checked)
+);
 
 const isochroneTimeRangeEl = document.getElementById("isochrone-time-range");
 const isochroneIntervalRangeEl = document.getElementById(
@@ -324,36 +327,36 @@ const drawBubblesFromHospitalData = () => {
   let showSNSBox = false;
 
   bubbleLayers = data
-    .map(hospital => {
-      const [lat, long, _, currentDeaths, hospitalName, postcode] = hospital;
-      if (currentDeaths > snsConstant) {
-        const circle = L.circle(
-          [lat, long],
-          (currentDeaths / patientCount) * 1000000,
-          {
-            color: "blue",
-            fillColor: "#00bfff",
-            weight: 1,
-            fillOpacity: 0.05,
-            opacity: 0.6
-          }
-        );
-        circle
-          .bindPopup(
-            currentDeaths.toString(10) +
-              " people fulfilling the inclusion criteria at " +
-              hospitalName.toString(10) +
-              ", " +
-              postcode.toString(10)
-          )
-          .addTo(map);
-        return circle;
-      } else {
-        showSNSBox = true;
-        return null;
-      }
-    })
-    .filter(x => x !== null);
+  .map(hospital => {
+    const [lat, long, _, currentDeaths, hospitalName, postcode] = hospital;
+    if (currentDeaths > snsConstant) {
+      const circle = L.circle(
+        [lat, long],
+        (currentDeaths / patientCount) * 1000000,
+        {
+          color: "blue",
+          fillColor: "#00bfff",
+          weight: 1,
+          fillOpacity: 0.05,
+          opacity: 0.6
+        }
+      );
+      circle
+      .bindPopup(
+        currentDeaths.toString(10) +
+        " people fulfilling the inclusion criteria at " +
+        hospitalName.toString(10) +
+        ", " +
+        postcode.toString(10)
+      )
+      .addTo(map);
+      return circle;
+    } else {
+      showSNSBox = true;
+      return null;
+    }
+  })
+  .filter(x => x !== null);
 
   if (showSNSBox && snsMessageBox === null) {
   }
@@ -390,8 +393,8 @@ isochroneIntervalRangeEl.addEventListener("change", debounceRedrawIsochrones);
 const isochroneFromHere = e => {};
 
 document
-  .getElementById("mode-of-transport-dropdown")
-  .addEventListener("change", e => {
-    modeOfTransportOption = e.currentTarget.value;
-    debounceRedrawIsochrones();
-  });
+.getElementById("mode-of-transport-dropdown")
+.addEventListener("change", e => {
+  modeOfTransportOption = e.currentTarget.value;
+  debounceRedrawIsochrones();
+});
