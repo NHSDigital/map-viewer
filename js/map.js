@@ -208,7 +208,7 @@ const redrawIsochrones = async () => {
   headers.set("Content-Type", "application/json");
   headers.set(
     "Authorization",
-    "5b3ce3597851110001cf6248aa986a24b58349fb894b2fdfd506b08e"
+    env.ORS_API_KEY
   );
 
   const sectionCount = Math.ceil(isochroneTime / isochroneInterval);
