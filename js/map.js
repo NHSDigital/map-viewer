@@ -14,7 +14,10 @@ let isochroneInterval = 30;
 let isochroneDebounceInterval = null;
 let currentIsochrone = [];
 let bubbleLayers = [];
+let patientIndicatorLayer = [];
 let snsMessageBox = null;
+let latestGeojson = null;
+let drawnIsochroneLayers = [];
 
 const CCGBoundaryLayerOptions = {
   style: {
@@ -33,6 +36,16 @@ const MSOABoundaryLayerOptions = {
     opacity: 0.6
   }
 };
+
+const PatientIndicatorOptions = {
+    color: "blue",
+    fillColor: "blue",
+    weight: 1.0,
+    fillOpacity: 0.5,
+    opacity: 1.0
+
+};
+
 
 function openContextMenu(e) {
   const popup = L.popup({
@@ -143,12 +156,71 @@ const loadCCGBoundaryData = async () => {
   const loadHospitalData = async () => {
     const fetchedData = await fetch("/assets/sensitive/HospitalData.json");
     hospitalData = await fetchedData.json();
+
   };
 
   const loadPatientData = async () => {
     const fetchedData = await fetch("/assets/TestPatientData.json");
     patientData = await fetchedData.json();
-  };
+    var coords_sets = drawnIsochroneLayers;
+    if(drawnIsochroneLayers == []){
+      return;
+    }
+    var foundPatients = [];
+
+    for (var ii = 0; ii < coords_sets.length; ii++){
+
+      var innerPatientArray = [];
+      var coords_it = coords_sets[ii]["geometry"]["coordinates"][0];
+
+      patientData.forEach(patient => {
+        var inside = false;
+        var turfPatient = turf.point(patient);
+
+        var turfPoly = turf.polygon([coords_it]);
+        inside = turf.booleanPointInPolygon(turfPatient, turfPoly);
+        if (inside){
+          innerPatientArray.push(patient);
+        }
+
+      });
+      foundPatients.push(innerPatientArray);
+
+    }
+
+    for (var i = 0; i < foundPatients.length-1; i++) {
+      var largerIsochrone = foundPatients[i];
+      var smallerIsochrone = foundPatients[i + 1];
+      for (var j = 0; j < smallerIsochrone.length; j++) {
+        if (largerIsochrone.includes(smallerIsochrone[j])){
+
+          //remove patient from larger isochrone
+          var index = largerIsochrone.indexOf(smallerIsochrone[j]);
+          if(index !=-1){
+            largerIsochrone.splice(index,1);
+          }
+        }
+      }
+      foundPatients[i] = largerIsochrone;
+    }
+
+    //Bind popups for found patients within each isochrone
+    for (var i = 0; i < foundPatients.length; i++) {
+      var time = drawnIsochroneLayers[i]["properties"]["value"];
+      console.log("Time " + time + " with patients: " + foundPatients[i].length);
+      currentIsochrone[i].bindPopup("Time: " + time/60 + " minutes" + " with: " + foundPatients[i].length + " patients");
+
+      foundPatients[i].forEach(patient =>{
+        patientIndicatorLayer.push(
+         L.circle([patient[0],patient[1]],300,
+           PatientIndicatorOptions
+        ).addTo(map));
+      }
+    );
+
+
+  }
+};
 
   const toggleLayer = async (layer, toggle) => {
     if (toggle) {
@@ -184,6 +256,14 @@ const loadCCGBoundaryData = async () => {
     }
     toggleLayer(ccgBoundaryLayer, toggle);
   };
+
+  const togglePatientData = async toggle => {
+    patientIndicatorLayer.forEach(indicator => map.removeLayer(indicator));
+    if (toggle) {
+      await loadPatientData();
+    }
+  };
+
 
   const toggleMSOABoundaryData = async toggle => {
     if (msoaBoundaryLayer === null && toggle) {
@@ -238,10 +318,11 @@ const loadCCGBoundaryData = async () => {
     );
     const geoJson = await response.json();
 
+    latestGeojson = geoJson;
+
     const colours = ISOCHRONE_COLOURS[sectionCount];
-
     currentIsochrone.forEach(layer => map.removeLayer(layer));
-
+    drawnIsochroneLayers = [];
     currentIsochrone = geoJson.features.reverse().map((feature, index) => {
       let finalFeature = null;
       if (index === geoJson.features.length - 1) {
@@ -249,8 +330,10 @@ const loadCCGBoundaryData = async () => {
       } else {
         finalFeature = turf.difference(feature, geoJson.features[index + 1]);
       }
-      return L.geoJSON(finalFeature, {
+
+      var returnVal = L.geoJSON(finalFeature, {
         onEachFeature:function(feature,layer){
+
           layer.bindPopup(feature.properties.value/60 + " minutes");
         },
         ...CCGBoundaryLayerOptions,
@@ -261,6 +344,19 @@ const loadCCGBoundaryData = async () => {
           color: colours[index]
         }
       });
+
+      //Reverse coords for patient intersection testing
+      feature["geometry"]["coordinates"][0] = feature["geometry"]["coordinates"][0].map(function reverse(item) {
+        return Array.isArray(item) && Array.isArray(item[0])
+        ? item.map(reverse)
+        : item.reverse();
+      });
+      drawnIsochroneLayers.push(feature);
+
+      return returnVal;
+
+
+
     });
     isochroneLoading = false;
     toggleLoadingText(false);
@@ -283,6 +379,12 @@ const loadCCGBoundaryData = async () => {
   .getElementById("ccg-boundary-toggle")
   .addEventListener("change", ({ currentTarget }) =>
   toggleCCGBoundaryData(currentTarget.checked)
+);
+
+document
+.getElementById("patient-data-toggle")
+.addEventListener("change", ({ currentTarget }) =>
+togglePatientData(currentTarget.checked)
 );
 
 document
