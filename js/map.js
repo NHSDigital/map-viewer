@@ -275,6 +275,7 @@ const loadCCGBoundaryData = async () => {
   const redrawIsochrones = async () => {
     isochroneLoading = true;
 
+
     const errorEl = document.getElementById("isochrone-error");
     if (isochroneCenter === null) {
       errorEl.innerHTML =
@@ -305,6 +306,15 @@ const loadCCGBoundaryData = async () => {
     })
     .filter(x => x > 0);
 
+    //ensure patient drawing disabled during isochrome reload
+    var patientDrawEL = document.getElementById("patient-data-toggle");
+    patientDrawEL.disabled = true;
+    patientDrawEL.checked = false;
+
+    //remove any drawn patients
+    togglePatientData(false);
+
+
     const response = await fetch(
       `https://api.openrouteservice.org/v2/isochrones/${modeOfTransportOption}`,
       {
@@ -316,9 +326,13 @@ const loadCCGBoundaryData = async () => {
         })
       }
     );
+
     const geoJson = await response.json();
 
     latestGeojson = geoJson;
+
+    //enable patient draw toggle
+    patientDrawEL.disabled = false;
 
     const colours = ISOCHRONE_COLOURS[sectionCount];
     currentIsochrone.forEach(layer => map.removeLayer(layer));
