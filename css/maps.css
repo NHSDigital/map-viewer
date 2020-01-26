@@ -148,6 +148,14 @@ body {
   border-radius: 50%;
 }
 
+input:disabled + .slider{
+  opacity: 0.6;
+}
+
+input:disabled + .slider:before{
+  opacity: 0.6;
+}
+
 input:checked + .slider {
   background-color: #41b6e6;
 }
