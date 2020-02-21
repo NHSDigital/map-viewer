@@ -11,7 +11,7 @@ Bubbles can be clicked on to find out information of plotted data.
 ### Isochrone Map
 Isochrone functionality works with plotted postcodes, where the postcode data is manually added to the data directory (and in a specific format), so the number of postcodes of hospitals within an isochrone is specified. Adding postcode data to the data directory isn't done automatically.
 
-### Heat Map
+### Heat/ Choropleth Map
 There are MSOA and CCG boundary data available (with toggle functionalities) for use with heat maps (the heap maps have not yet been started).
 
 ### Setup 
