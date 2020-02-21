@@ -1,0 +1,46 @@
+@import "../../node_modules/nhsuk-frontend/dist/nhsuk-3.0.2.min.css";
+@import "../../node_modules/leaflet/dist/leaflet.css";
+
+.mv-main {
+  margin-top: 20px;
+  z-index: 1;
+}
+
+.mv-margin-none {
+  margin: 0px;
+}
+
+.mt-margin-b10 {
+  margin-bottom: 10px;
+}
+
+.mv-map-wrapper {
+  display: flex;
+}
+
+.mv-map-container {
+  z-index: 20;
+  width: 100%;
+  height: calc(100vh - 217px);
+  margin-bottom: 25px;
+}
+
+.mv-map-sidebar {
+  max-height: calc(100vh - 217px);
+  overflow-y: scroll;
+  padding: 15px;
+  width: 650px;
+  background-color: #eee;
+  margin-right: 15px;
+  & > .nhsuk-panel-with-label {
+    margin-top: 15px;
+  }
+
+  &__title {
+    font-size: 27px;
+    margin-top: 15px;
+    margin-left: 0px;
+  }
+}
+
+@import "./partials/file-upload";

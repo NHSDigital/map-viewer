@@ -1,0 +1,73 @@
+.mv-file-upload {
+  padding: 10px;
+  min-height: 200px;
+  background-color: #768692;
+  border-radius: 5px;
+  margin-bottom: 50px;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    border: 2px solid darken(#768692, 10);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.1s ease-in-out;
+
+    &__text {
+      font-size: 25px;
+      margin: 5px 50px 5px 10px;
+    }
+
+    &__icon {
+      margin: 5px 10px 5px 50px;
+      height: 75px;
+    }
+
+    &:hover {
+      background-color: darken(#768692, 5);
+    }
+
+    &:active {
+      background-color: darken(#768692, 15);
+    }
+  }
+
+  &-confirmation {
+    border: 2px solid darken(#768692, 10);
+    border-radius: 5px;
+    margin: 50px;
+    padding: 15px;
+    min-width: 400px;
+    background-color: darken(#768692, 5);
+    &__title {
+      font-size: 20px;
+      margin: 0px;
+      margin-bottom: 10px;
+    }
+
+    & > p {
+      margin: 0px;
+      margin-bottom: 5px;
+      font-size: 17px;
+    }
+
+    &__supported {
+      color: #78be20;
+    }
+
+    &__unsupported {
+      color: #ffb81c;
+    }
+
+    & > button {
+      margin: 0px;
+      width: 100%;
+    }
+  }
+}
